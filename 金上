@@ -1,0 +1,64 @@
+import streamlit as st
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 設定中文字體
+plt.rcParams['font.family'] = ['Microsoft JhengHei']
+
+# Streamlit 標題
+st.title("金屬屑散佈圖")
+
+# 使用者輸入數據
+data_input = st.text_area("請輸入數據（格式：日期:值1,值2，例如 2025/02/08:0.231）",
+"""2025/02/03:0
+2025/02/04:0
+2025/02/06:0
+2025/02/07:0
+2025/02/08:0.231
+2025/02/10:0
+2025/02/15:0.051,0
+2025/02/18:0,0.179
+2025/03/05:0,0.166""")
+
+# 按鈕觸發計算
+if st.button("繪製散佈圖"):
+    try:  # <--- 這裡的縮排沒錯
+        # 解析輸入數據
+        data = {}  # <--- 這行及以下要縮排
+        for line in data_input.split("\n"):
+            if ":" in line:
+                date, values = line.split(":")
+                values = [float(v) for v in values.split(",")]
+                data[date] = values
+
+        # 轉換數據為 X, Y 座標
+        x = []
+        y = []
+        for i, (date, values) in enumerate(data.items()):
+            x.extend([i] * len(values))  # 用索引代替日期
+            y.extend(values)
+
+        # 畫散佈圖
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.scatter(x, y, color='blue', label="金屬屑Ø", alpha=0.7)
+
+        # 設定 X 軸標籤為日期，並讓文字垂直顯示
+        ax.set_xticks(range(len(data)))
+        ax.set_xticklabels(list(data.keys()), rotation=90)
+
+        # 加入標題與標籤
+        ax.set_title("2025 金屬部上支架金屬屑散佈圖")
+        ax.set_xlabel("生產日期(每批次抽樣10PCS)")
+        ax.set_ylabel("金屬屑大小")
+
+        # 加入網格線
+        ax.grid(True, linestyle="--", alpha=0.5)
+
+        # 顯示圖例
+        ax.legend()
+
+        # 在 Streamlit 顯示圖表
+        st.pyplot(fig)
+
+    except Exception as e:
+        st.error("請確認輸入的數據格式正確！")
